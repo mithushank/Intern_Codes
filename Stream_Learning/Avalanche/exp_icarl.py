@@ -2,13 +2,14 @@ import torch
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 from torchvision.models import resnet18,vgg19,resnet50
-from avalanche.benchmarks.classic import SplitFMNIST, SplitCIFAR10
+from avalanche.benchmarks.classic import SplitFMNIST, SplitCIFAR10,SplitCIFAR100
 from avalanche.evaluation.metrics import accuracy_metrics, loss_metrics
 from avalanche.logging import InteractiveLogger
 from avalanche.training.plugins import EvaluationPlugin
 from avalanche.training import ICaRL
 
 from torchvision import models
+
 
 class FeatureExtractor(torch.nn.Module):
     def __init__(self, model_name='resnet18'):
@@ -30,7 +31,7 @@ class FeatureExtractor(torch.nn.Module):
             self.model.classifier[-1] = torch.nn.Identity()
         # Add similar modifications for other models if required
 
-    def forward(self, x,dataset = 'SplitCIFAR10'):
+    def forward(self, x,dataset = 'SplitMNIST'):
         # Convert grayscale images to RGB by duplicating the single channel
         '''
         For the different types of datasets we need to adjust the number of channels
@@ -57,6 +58,8 @@ class Classifier(torch.nn.Module):
 # Load SplitFMNIST dataset
 benchmark = SplitFMNIST(n_experiences=5, seed=1234)
 benchmark_2 = SplitCIFAR10(n_experiences=5,seed=1234)
+benchmark_3 = SplitCIFAR100(n_experiences=5,seed=1234)
+
 # Define ResNet18-based feature extractor
 feature_extractor = FeatureExtractor(model_name='resnet50')
 feature_extractor_d = FeatureExtractor(model_name='resnet18')
@@ -80,7 +83,7 @@ eval_plugin = EvaluationPlugin(
 # Define ICaRL strategy
 strategy = ICaRL(
     feature_extractor=feature_extractor,
-    classifier=Classifier(input_size=2048, num_classes=10),
+    classifier=Classifier(input_size=2048, num_classes=100),
     optimizer=optimizer,
     memory_size=100,
     buffer_transform=None,
@@ -114,12 +117,15 @@ strategy_dd = ICaRL(
 )
 
 # Train the model
-for experience in benchmark_2.train_stream:
+
+for experience in benchmark.train_stream:
     print("Start of experience: ", experience.current_experience)
     print('Model used to trained: Resnet50')
+    
     strategy.train(experience)
 
 
     print("Computing accuracy on the whole test set")
     print('Model used to trained: Resnet50')
-    strategy.eval(benchmark_2.test_stream)
+    strategy.eval(benchmark.test_stream)
+
