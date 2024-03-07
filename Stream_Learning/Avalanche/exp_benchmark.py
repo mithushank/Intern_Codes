@@ -38,23 +38,6 @@ for i,batch in enumerate(benchmark.train_stream):
     # mnist_ava = data_incremental_benchmark(batch,experience_size=5000)
     # print(len(mnist_ava),len(D))
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-    
-# D_test = []
-# for j, batch in enumerate(benchmark.test_stream):
-#     dataset, _ = batch.dataset, batch.task_label
-#     dl = DataLoader(dataset, batch_size=1)
-#     D_test.append(dl)
 # egt the data points from the ex[perience] and select through the Random selector
 def random_selector(benchmark):
     list_of_selected_examples_from_exp = []
@@ -71,7 +54,9 @@ def random_selector(benchmark):
             if count < buffer_size:
                 d.append(dataset[i] )
                 count+=1
+        
         batch.dataset = d
         list_of_selected_examples_from_exp.append(batch)
         # list_of_selected_examples_from_exp.extend(batch)
     return list_of_selected_examples_from_exp
+
