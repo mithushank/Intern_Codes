@@ -2,8 +2,8 @@ import torch
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD
 from torchvision.models import resnet18,vgg19,resnet50
-from avalanche.benchmarks.classic import SplitFMNIST, SplitCIFAR10,SplitCIFAR100
-from avalanche.evaluation.metrics import accuracy_metrics, loss_metrics
+from avalanche.benchmarks.classic import SplitFMNIST, SplitCIFAR10,SplitCIFAR100, PermutedMNIST
+from avalanche.evaluation.metrics import accuracy_metrics, loss_metrics,forgetting_metrics
 from avalanche.logging import InteractiveLogger
 from avalanche.training.plugins import EvaluationPlugin
 from avalanche.training import ICaRL
@@ -77,6 +77,7 @@ logger = InteractiveLogger()
 eval_plugin = EvaluationPlugin(
     accuracy_metrics(minibatch=True, epoch=True, experience=True, stream=True),
     loss_metrics(minibatch=True, epoch=True, experience=True, stream=True),
+    forgetting_metrics( experience=True, stream=True),
     loggers=[logger]
 )
 
@@ -88,7 +89,7 @@ strategy = ICaRL(
     memory_size=100,
     buffer_transform=None,
     fixed_memory=True,
-    train_epochs=2,
+    train_epochs=1,
     train_mb_size=1024,
     plugins=[eval_plugin]
 )
@@ -99,7 +100,7 @@ strategy_d = ICaRL(
     memory_size=100,
     buffer_transform=None,
     fixed_memory=True,
-    train_epochs=2,
+    train_epochs=1,
     train_mb_size=32,
     plugins=[eval_plugin]
 )
@@ -111,7 +112,7 @@ strategy_dd = ICaRL(
     memory_size=100,
     buffer_transform=None,
     fixed_memory=True,
-    train_epochs=2,
+    train_epochs=1,
     train_mb_size=128,
     plugins=[eval_plugin]
 )
@@ -119,13 +120,9 @@ strategy_dd = ICaRL(
 # Train the model
 
 for experience in benchmark.train_stream:
-    print("Start of experience: ", experience.current_experience)
-    print('Model used to trained: Resnet50')
-    
+    print("Start of experience: ", experience.current_experience)    
     strategy.train(experience)
 
-
     print("Computing accuracy on the whole test set")
-    print('Model used to trained: Resnet50')
     strategy.eval(benchmark.test_stream)
 
