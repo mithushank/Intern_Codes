@@ -20,7 +20,6 @@ from avalanche.benchmarks.classic.classic_benchmarks_utils import (
 )
 from avalanche.benchmarks.utils import AvalancheDataset
 from avalanche.benchmarks.utils.data import make_avalanche_dataset
-from avalanche.benchmarks.generators import dataset_benchmark, data_incremental_benchmark 
 from avalanche.training import RandomExemplarsSelectionStrategy, HerdingSelectionStrategy,FeatureBasedExemplarsSelectionStrategy
 from avalanche.training.storage_policy import ParametricBuffer,ExemplarsBuffer,ExperienceBalancedBuffer
 import numpy
@@ -68,3 +67,4 @@ strategy = AGEM(
 
 for batch in (benchmark.train_stream):
     strategy.train(batch)    
+    strategy.eval(benchmark.test_stream)
